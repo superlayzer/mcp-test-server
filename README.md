@@ -27,6 +27,7 @@ the protocol, not to be useful in their own right.
 | `tool_caller`        | Widget-driven tool invocation via `ui/request-tool-call`                              |
 | `broken_widget`      | Widget that never sends `ui/initialize` — exercises the host's handshake timeout      |
 | `destructive_action` | Tool flagged `_meta.destructive: true` — exercises the per-call confirmation gate     |
+| `followup_caller`    | Widget-driven assistant continuation via `ui/request-followup-turn`                   |
 
 ## Quick start
 
