@@ -1,4 +1,4 @@
-export const TOOL_CALLER_WIDGET_HTML = `<!DOCTYPE html>
+export const FOLLOWUP_CALLER_WIDGET_HTML = `<!DOCTYPE html>
 <html>
 <head>
 <meta charset="utf-8">
@@ -9,9 +9,20 @@ export const TOOL_CALLER_WIDGET_HTML = `<!DOCTYPE html>
   body.dark { background: #0a0a0a; color: #f5f5f5; }
   body.light { background: #fff; color: #111; }
   body:not(.dark):not(.light) { background: #0a0a0a; color: #f5f5f5; }
-  h3 { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
-  p { font-size: 13px; opacity: 0.6; margin-bottom: 16px; }
-  .row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+  .label { opacity: 0.6; font-size: 12px; margin-bottom: 8px; }
+  textarea {
+    width: 100%;
+    min-height: 80px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid currentColor;
+    background: transparent;
+    color: inherit;
+    font-family: inherit;
+    font-size: 14px;
+    resize: vertical;
+    margin-bottom: 12px;
+  }
   button {
     padding: 10px 16px;
     border-radius: 8px;
@@ -23,32 +34,20 @@ export const TOOL_CALLER_WIDGET_HTML = `<!DOCTYPE html>
     min-height: 44px;
   }
   button:hover { opacity: 0.8; }
-  button.danger { border-color: #ef4444; color: #ef4444; }
-  .status { font-size: 13px; min-height: 18px; margin-bottom: 8px; opacity: 0.7; }
-  .status.ok { color: #22c55e; opacity: 1; }
-  .status.error { color: #ef4444; opacity: 1; }
-  pre {
-    background: rgba(127,127,127,0.1);
-    padding: 12px;
-    border-radius: 6px;
-    font-size: 12px;
-    white-space: pre-wrap;
-    word-break: break-word;
-  }
+  button:disabled { opacity: 0.4; cursor: not-allowed; }
+  .status { font-size: 13px; margin-top: 12px; min-height: 20px; }
+  .status.ok { color: #22c55e; }
+  .status.error { color: #ef4444; }
+  .status.pending { color: #eab308; }
 </style>
 </head>
 <body>
-  <div id="loading">Loading…</div>
+  <div id="loading" class="label">Loading…</div>
   <div id="content" style="display:none">
-    <h3>Tool caller playground</h3>
-    <p>Calls other tools on the same MCP server via tools/call.</p>
-    <div class="row">
-      <button id="ping">Call playground_ping</button>
-      <button id="missing" class="danger">Call missing_tool (should fail)</button>
-      <button id="destructive" class="danger">Call destructive_action (should prompt)</button>
-    </div>
+    <div class="label">playground follow-up caller</div>
+    <textarea id="prompt">Summarise our conversation so far.</textarea>
+    <button id="send">Send follow-up</button>
     <div class="status" id="status"></div>
-    <pre id="result" style="display:none"></pre>
   </div>
 <script>
 (function () {
@@ -56,14 +55,6 @@ export const TOOL_CALLER_WIDGET_HTML = `<!DOCTYPE html>
   var pending = {};
 
   function postToHost(msg) { window.parent.postMessage(msg, "*"); }
-
-  function notifySize() {
-    postToHost({
-      jsonrpc: "2.0",
-      method: "ui/notifications/size-changed",
-      params: { height: document.body.scrollHeight }
-    });
-  }
 
   function call(method, params) {
     return new Promise(function (resolve, reject) {
@@ -76,6 +67,7 @@ export const TOOL_CALLER_WIDGET_HTML = `<!DOCTYPE html>
   window.addEventListener("message", function (event) {
     var data = event.data;
     if (!data || data.jsonrpc !== "2.0") return;
+
     if (data.id !== undefined && pending[data.id]) {
       var h = pending[data.id];
       delete pending[data.id];
@@ -83,6 +75,7 @@ export const TOOL_CALLER_WIDGET_HTML = `<!DOCTYPE html>
       else if (data.error) h.reject(data.error);
       return;
     }
+
     if (data.method === "ui/notifications/host-context-changed" && data.params && data.params.theme) {
       document.body.className = data.params.theme;
     }
@@ -94,57 +87,49 @@ export const TOOL_CALLER_WIDGET_HTML = `<!DOCTYPE html>
     el.className = "status" + (kind ? " " + kind : "");
   }
 
-  function showResult(value) {
-    var el = document.getElementById("result");
-    el.textContent = JSON.stringify(value, null, 2);
-    el.style.display = "block";
-  }
-
-  function hideResult() {
-    document.getElementById("result").style.display = "none";
-  }
-
-  function callTool(toolName) {
-    setStatus("Calling " + toolName + "…");
-    hideResult();
-    call("tools/call", { name: toolName, arguments: {} }).then(
-      function (result) {
-        setStatus("Response from " + toolName, "ok");
-        showResult(result);
-      },
-      function (err) {
-        setStatus("Error: code " + err.code + " — " + (err.message || ""), "error");
-      }
-    );
-  }
-
   setTimeout(function () {
     call("ui/initialize", {
       protocolVersion: "2026-01-26",
       appCapabilities: {},
-      appInfo: { name: "tool-caller", version: "1.0.0" }
+      appInfo: { name: "followup-caller", version: "1.0.0" }
     }).then(function (result) {
       if (result && result.hostContext && result.hostContext.theme) {
         document.body.className = result.hostContext.theme;
       }
       document.getElementById("loading").style.display = "none";
       document.getElementById("content").style.display = "block";
+      postToHost({
+        jsonrpc: "2.0",
+        method: "ui/notifications/size-changed",
+        params: { height: document.body.scrollHeight }
+      });
     }).catch(function (err) {
       document.getElementById("loading").textContent = "Init failed: " + (err.message || JSON.stringify(err));
     });
   }, 50);
 
-  document.getElementById("ping").addEventListener("click", function () {
-    callTool("playground_ping");
+  document.getElementById("send").addEventListener("click", function () {
+    var prompt = document.getElementById("prompt").value.trim();
+    if (!prompt) {
+      setStatus("Prompt is empty.", "error");
+      return;
+    }
+    var btn = document.getElementById("send");
+    btn.disabled = true;
+    setStatus("Calling ui/request-followup-turn…", "pending");
+    var t0 = performance.now();
+    call("ui/request-followup-turn", { prompt: prompt }).then(
+      function () {
+        var ms = Math.round(performance.now() - t0);
+        setStatus("Resolved in " + ms + "ms — host accepted the follow-up.", "ok");
+        btn.disabled = false;
+      },
+      function (err) {
+        setStatus("Rejected: " + (err.message || JSON.stringify(err)), "error");
+        btn.disabled = false;
+      }
+    );
   });
-  document.getElementById("missing").addEventListener("click", function () {
-    callTool("nonexistent_tool_xyz");
-  });
-  document.getElementById("destructive").addEventListener("click", function () {
-    callTool("destructive_action");
-  });
-
-  new ResizeObserver(notifySize).observe(document.body);
 })();
 </script>
 </body>

@@ -9,6 +9,7 @@ import { registerStateCounter } from "./tools/state-counter.js";
 import { registerToolCaller } from "./tools/tool-caller.js";
 import { registerBrokenWidget } from "./tools/broken-widget.js";
 import { registerDestructiveAction } from "./tools/destructive-action.js";
+import { registerFollowupCaller } from "./tools/followup-caller.js";
 
 function createMcpServer(): McpServer {
   const server = new McpServer(
@@ -21,6 +22,7 @@ function createMcpServer(): McpServer {
   registerToolCaller(server);
   registerBrokenWidget(server);
   registerDestructiveAction(server);
+  registerFollowupCaller(server);
 
   return server;
 }
