@@ -7,7 +7,7 @@ export function registerStateCounter(server: McpServer): void {
     {
       title: "Playground State Counter",
       description:
-        "Renders a counter widget that persists its value via the apps-sdk state API. Use to verify ui/state/get and ui/state/set end-to-end and to demonstrate the size-cap error path.",
+        "Renders a counter widget that persists its value via the MCP Apps state API. Use to verify ui/state/get and ui/state/set end-to-end and to demonstrate the size-cap error path.",
       inputSchema: {},
       _meta: { ui: { resourceUri: "ui://state-counter/widget.html" } },
     },

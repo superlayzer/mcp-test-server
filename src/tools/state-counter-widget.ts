@@ -111,8 +111,8 @@ export const STATE_COUNTER_WIDGET_HTML = `<!DOCTYPE html>
   setTimeout(function () {
     call("ui/initialize", {
       protocolVersion: "2026-01-26",
-      capabilities: {},
-      clientInfo: { name: "state-counter", version: "1.0.0" }
+      appCapabilities: {},
+      appInfo: { name: "state-counter", version: "1.0.0" }
     }).then(function (result) {
       if (result && result.hostContext && result.hostContext.theme) {
         document.body.className = result.hostContext.theme;
@@ -141,8 +141,9 @@ export const STATE_COUNTER_WIDGET_HTML = `<!DOCTYPE html>
     call("ui/state/set", { state: oversized }).then(
       function () { setStatus("Unexpected: 9 kB accepted!", "error"); },
       function (err) {
-        if (err && err.code === -32002) {
-          setStatus("Cap rejected the payload (code -32002 StateTooLarge) ✓", "ok");
+        // Code-based check survives message wording changes.
+        if (err && err.code === -32602) {
+          setStatus("Cap rejected the payload (code -32602 InvalidParams) ✓", "ok");
         } else {
           setStatus("Failed for a different reason: " + (err.message || JSON.stringify(err)), "error");
         }

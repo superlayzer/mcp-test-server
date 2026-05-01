@@ -7,7 +7,7 @@ export function registerToolCaller(server: McpServer): void {
     {
       title: "Playground Tool Caller",
       description:
-        "Renders a widget that invokes other tools on the same MCP server via ui/request-tool-call. Use to verify same-server tool invocation end-to-end and to demonstrate the error path for missing tools.",
+        "Renders a widget that invokes other tools on the same MCP server via standard MCP tools/call. Use to verify same-server tool invocation end-to-end and to demonstrate the error path for missing tools.",
       inputSchema: {},
       _meta: { ui: { resourceUri: "ui://tool-caller/widget.html" } },
     },
