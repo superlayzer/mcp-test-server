@@ -3,5 +3,20 @@ main = "src/index.ts"
 compatibility_date = "2025-01-01"
 compatibility_flags = ["nodejs_compat"]
 
+# Surface console.log / console.error in the Cloudflare dashboard (Workers Logs).
+[observability]
+enabled = true
+head_sampling_rate = 1
+
+# Per-session DO so capability-gating state persists across initialize → tools/list.
+[[durable_objects.bindings]]
+name = "MCP_SESSION"
+class_name = "McpSession"
+
+# Adding McpSession is one-way; removal requires a v2 migration with deleted_classes.
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["McpSession"]
+
 # Optional: require API key auth by setting a secret:
 # npx wrangler secret put MCP_API_KEY
