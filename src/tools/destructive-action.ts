@@ -8,7 +8,7 @@ export function registerDestructiveAction(server: McpServer): void {
       description:
         "Pretends to do something irreversible. Use to verify the host's destructive-confirmation modal.",
       inputSchema: {},
-      _meta: { destructive: true },
+      annotations: { destructiveHint: true },
     },
     async () => ({
       content: [

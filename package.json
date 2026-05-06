@@ -2,16 +2,15 @@
   "name": "mcp-test-server",
   "type": "module",
   "scripts": {
-    "dev": "tsx watch src/node.ts",
+    "dev": "wrangler dev --port 3006",
     "build": "tsc",
-    "start": "node dist/node.js",
+    "start": "wrangler dev --port 3006",
     "typecheck": "tsc --noEmit",
     "deploy": "wrangler deploy"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "1.29.0",
-    "@hono/node-server": "1.19.14",
-    "fetch-to-node": "2.1.0",
+    "@modelcontextprotocol/ext-apps": "1.7.1",
     "hono": "4.12.14",
     "zod": "4.3.6"
   },
