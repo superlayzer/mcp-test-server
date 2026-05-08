@@ -44,6 +44,7 @@ same session.
 | `broken_widget`      | Widget that never sends `ui/initialize` — exercises the host's handshake timeout            |
 | `destructive_action` | Tool flagged `annotations.destructiveHint: true` — exercises the per-call confirmation gate |
 | `followup_caller`    | Widget-driven assistant continuation via `ui/request-followup-turn`                         |
+| `slow_widget`        | Sleeps configurable seconds and honors abort — exercises `ui/notifications/tool-cancelled`  |
 
 The first row registers unconditionally; the rest only register when
 the host has advertised the `io.modelcontextprotocol/ui` extension.
