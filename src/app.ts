@@ -26,6 +26,10 @@ import {
   registerFollowupCallerResource,
   registerFollowupCallerTool,
 } from "./tools/followup-caller.js";
+import {
+  registerSlowWidgetResource,
+  registerSlowWidgetTool,
+} from "./tools/slow-widget.js";
 
 type Env = {
   MCP_API_KEY?: string;
@@ -57,6 +61,7 @@ export class McpSession extends DurableObject<Env> {
       registerToolCallerResource(this.server);
       registerBrokenWidgetResource(this.server);
       registerFollowupCallerResource(this.server);
+      registerSlowWidgetResource(this.server);
 
       registerPing(this.server);
 
@@ -70,6 +75,7 @@ export class McpSession extends DurableObject<Env> {
           registerBrokenWidgetTool(this.server!);
           registerDestructiveAction(this.server!);
           registerFollowupCallerTool(this.server!);
+          registerSlowWidgetTool(this.server!);
         }
       };
 
