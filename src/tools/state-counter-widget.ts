@@ -84,6 +84,13 @@ export const STATE_COUNTER_WIDGET_HTML = `<!DOCTYPE html>
     if (data.method === "ui/notifications/host-context-changed" && data.params && data.params.theme) {
       document.body.className = data.params.theme;
     }
+
+    if (data.method === "ui/resource-teardown") {
+      if (data.id !== undefined) {
+        postToHost({ jsonrpc: "2.0", id: data.id, result: {} });
+      }
+      return;
+    }
   });
 
   function setStatus(text, kind) {
