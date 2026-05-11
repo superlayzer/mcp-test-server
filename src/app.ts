@@ -30,6 +30,10 @@ import {
   registerSlowWidgetResource,
   registerSlowWidgetTool,
 } from "./tools/slow-widget.js";
+import {
+  registerBlobWidgetResource,
+  registerBlobWidgetTool,
+} from "./tools/blob-widget.js";
 
 type Env = {
   MCP_API_KEY?: string;
@@ -62,6 +66,7 @@ export class McpSession extends DurableObject<Env> {
       registerBrokenWidgetResource(this.server);
       registerFollowupCallerResource(this.server);
       registerSlowWidgetResource(this.server);
+      registerBlobWidgetResource(this.server);
 
       registerPing(this.server);
 
@@ -76,6 +81,7 @@ export class McpSession extends DurableObject<Env> {
           registerDestructiveAction(this.server!);
           registerFollowupCallerTool(this.server!);
           registerSlowWidgetTool(this.server!);
+          registerBlobWidgetTool(this.server!);
         }
       };
 

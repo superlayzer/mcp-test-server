@@ -45,6 +45,7 @@ same session.
 | `destructive_action` | Tool flagged `annotations.destructiveHint: true` — exercises the per-call confirmation gate |
 | `followup_caller`    | Widget-driven assistant continuation via `ui/request-followup-turn`                         |
 | `slow_widget`        | Sleeps configurable seconds and honors abort — exercises `ui/notifications/tool-cancelled`  |
+| `blob_widget`        | Widget HTML delivered as base64-encoded `blob` — exercises SEP-1865 UI-resource decoding    |
 
 The first row registers unconditionally; the rest only register when
 the host has advertised the `io.modelcontextprotocol/ui` extension.
