@@ -46,9 +46,31 @@ same session.
 | `followup_caller`    | Widget-driven assistant continuation via `ui/request-followup-turn`                         |
 | `slow_widget`        | Sleeps configurable seconds and honors abort — exercises `ui/notifications/tool-cancelled`  |
 | `blob_widget`        | Widget HTML delivered as base64-encoded `blob` — exercises SEP-1865 UI-resource decoding    |
+| `structured_result`  | Returns typed `structuredContent` matching its `outputSchema` (MCP 2025-03-26)              |
+| `failing_tool`       | Always returns `isError: true` — exercises the host's tool-error render path                |
+| `image_result`       | Returns a base64 PNG as `image` content — exercises inline image rendering                  |
+| `multi_content`      | Returns multiple `content[]` items (text + image + text) in a single result                 |
+| `complex_input`      | Multi-field input schema (string, enum, number, array, nested object) — echoes the input    |
+| `resource_link_result` | Returns a `resource_link` content item — exercises link rendering and unsafe-scheme gating |
+| `embedded_resource_result` | Returns an embedded `resource` content item with inline text                          |
+| `empty_result`       | Returns `content: []` — exercises the host's empty-result placeholder                       |
+| `large_text_result`  | Returns ~10 KB of text — exercises overflow / scroll / truncation behaviour                 |
+| `bad_structured_output` | Declares `outputSchema` but returns mismatching `structuredContent` — exercises validation |
+| `read_only_tool`     | Declares all four tool annotations (`readOnlyHint`, `idempotentHint`, `openWorldHint`, `title`) |
+| `model_only_tool`    | `_meta.ui.visibility: ["model"]` — chat UI should hide it, model can still call    |
+| `app_only_tool`      | `_meta.ui.visibility: ["app"]` — model should NOT see it; only widgets can invoke  |
+| `binary_resource_result` | Embedded `resource` with `blob` payload (binary) — pairs with `embedded_resource_result` |
+| `huge_text_result`   | Returns ~1 MB of text — exercises high-payload truncation / scroll performance     |
+| `cancellable_non_widget` | Sleeps + honors abort, with no widget — non-widget cancellation path           |
+| `audio_result`       | Returns a base64 WAV as `audio` content — exercises inline audio player rendering  |
+| `logging_tool`       | Emits one `notifications/message` per severity level (debug → error)               |
+| `progress_emitter`   | Emits 5 `notifications/progress` events over ~2s — requires client `progressToken` |
+| `dynamic_tools`      | Toggles a secondary tool on/off and sends `notifications/tools/list_changed`       |
+| `external_api_demo`  | Calls an external HTTP API (GitHub Zen) — exercises outbound `fetch` from a tool handler |
 
-The first row registers unconditionally; the rest only register when
-the host has advertised the `io.modelcontextprotocol/ui` extension.
+The widget tools (those with a `_meta.ui.resourceUri`) only register
+when the host has advertised the `io.modelcontextprotocol/ui`
+extension; the rest register unconditionally.
 
 ## Quick start
 
