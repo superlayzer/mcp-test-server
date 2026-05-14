@@ -34,6 +34,29 @@ import {
   registerBlobWidgetResource,
   registerBlobWidgetTool,
 } from "./tools/blob-widget.js";
+import { registerStructuredResult } from "./tools/structured-result.js";
+import { registerFailingTool } from "./tools/failing-tool.js";
+import { registerImageResult } from "./tools/image-result.js";
+import { registerMultiContent } from "./tools/multi-content.js";
+import { registerComplexInput } from "./tools/complex-input.js";
+import { registerResourceLinkResult } from "./tools/resource-link-result.js";
+import { registerEmbeddedResourceResult } from "./tools/embedded-resource-result.js";
+import { registerEmptyResult } from "./tools/empty-result.js";
+import { registerLargeTextResult } from "./tools/large-text-result.js";
+import { registerBadStructuredOutput } from "./tools/bad-structured-output.js";
+import { registerReadOnlyTool } from "./tools/read-only-tool.js";
+import {
+  registerModelOnlyTool,
+  registerAppOnlyTool,
+} from "./tools/visibility-variants.js";
+import { registerBinaryResourceResult } from "./tools/binary-resource-result.js";
+import { registerHugeTextResult } from "./tools/huge-text-result.js";
+import { registerCancellableNonWidget } from "./tools/cancellable-non-widget.js";
+import { registerAudioResult } from "./tools/audio-result.js";
+import { registerLoggingTool } from "./tools/logging-tool.js";
+import { registerProgressEmitter } from "./tools/progress-emitter.js";
+import { registerDynamicTools } from "./tools/dynamic-tools.js";
+import { registerExternalApiDemo } from "./tools/external-api-demo.js";
 
 type Env = {
   MCP_API_KEY?: string;
@@ -69,6 +92,25 @@ export class McpSession extends DurableObject<Env> {
       registerBlobWidgetResource(this.server);
 
       registerPing(this.server);
+      registerStructuredResult(this.server);
+      registerFailingTool(this.server);
+      registerImageResult(this.server);
+      registerMultiContent(this.server);
+      registerComplexInput(this.server);
+      registerResourceLinkResult(this.server);
+      registerEmbeddedResourceResult(this.server);
+      registerEmptyResult(this.server);
+      registerLargeTextResult(this.server);
+      registerBadStructuredOutput(this.server);
+      registerReadOnlyTool(this.server);
+      registerBinaryResourceResult(this.server);
+      registerHugeTextResult(this.server);
+      registerCancellableNonWidget(this.server);
+      registerAudioResult(this.server);
+      registerLoggingTool(this.server);
+      registerProgressEmitter(this.server);
+      registerDynamicTools(this.server);
+      registerExternalApiDemo(this.server);
 
       // SEP-1865 capability gating: register UI tools only when the host advertised io.modelcontextprotocol/ui.
       this.server.server.oninitialized = () => {
@@ -82,13 +124,16 @@ export class McpSession extends DurableObject<Env> {
           registerFollowupCallerTool(this.server!);
           registerSlowWidgetTool(this.server!);
           registerBlobWidgetTool(this.server!);
+          registerModelOnlyTool(this.server!);
+          registerAppOnlyTool(this.server!);
         }
       };
 
       this.transport = new WebStandardStreamableHTTPServerTransport({
         // Pin to Worker-assigned id so DO routing key and protocol session id match.
         sessionIdGenerator: () => sessionId,
-        enableJsonResponse: true,
+        // SSE mode (the SDK default) required so server-initiated
+        // notifications can ride the response stream.
         onsessionclosed: async () => {
           await this.transport?.close();
           await this.server?.close();
@@ -151,14 +196,9 @@ app.use("/mcp", async (c, next) => {
   return next();
 });
 
-// JSON-mode transport doesn't support GET (SSE notification stream) —
-// answer with 405 so MCP clients fall back to POST-only instead of
-// treating the SDK's stateless-mode 400 as a fatal connection error.
-app.get("/mcp", (c) =>
-  c.text("Method Not Allowed", 405, { Allow: "POST, DELETE" }),
-);
-
-app.on(["POST", "DELETE"], "/mcp", async (c) => {
+// GET is the standalone SSE stream for server-initiated notifications
+// (e.g. `notifications/message` from `sendLoggingMessage`).
+app.on(["GET", "POST", "DELETE"], "/mcp", async (c) => {
   const sessionId = c.req.header("mcp-session-id") ?? crypto.randomUUID();
 
   const id = c.env.MCP_SESSION.idFromName(sessionId);
